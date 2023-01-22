@@ -21,7 +21,7 @@ x = 1
 def on_press(key):
     global x
     try:
-        if key.char == 'p':
+        if key.char == 's':
             screenshot = pyautogui.screenshot(region=SCREEN_REGION)
             # COMMENT OUT ONE OF THE TWO BELOW
             #screenshot.save(f'training_images/positive/pos-{x}.png') 
