@@ -27,7 +27,7 @@ minimap = np.array(minimap)
 os.system('cls')
 tree_img = cv2.imread(TREE_IMAGE)
 result = cv2.matchTemplate(minimap, tree_img, cv2.TM_CCOEFF_NORMED)
-threshold = 0.45
+threshold = 0.65
 
 loc = np.where(result >= threshold)
 trees_found = loc[0].size
