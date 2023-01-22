@@ -5,15 +5,16 @@ from pywinauto import Application
 import cv2
 import numpy as np
 import time
+from random import randint as r
 
 
 load_dotenv()
 TITLE=os.getenv("TITLE")
-LEFT=1150
-RIGHT=300
-WIDTH=150
-HEIGHT=150
-REGION=(LEFT,RIGHT,WIDTH,HEIGHT)
+MINIMAP_LEFT=1150
+MINIMAP_RIGHT=300
+MINIMAP_WIDTH=150
+MINIMAP_HEIGHT=150
+MINIMAP_REGION=(MINIMAP_LEFT,MINIMAP_RIGHT,MINIMAP_WIDTH,MINIMAP_HEIGHT)
 
 app = Application().connect(title=TITLE)
 THRESHOLD = 0.6
@@ -24,7 +25,7 @@ def start_bot(app):
     get_images(minimap_tree_png)
     
 def get_images(minimap_tree_png):
-    minimap = pyautogui.screenshot(region=REGION)
+    minimap = pyautogui.screenshot(region=MINIMAP_REGION)
     minimap.save("output_images/current_minimap.png")
     minimap = np.array(minimap)
 
@@ -50,7 +51,7 @@ def find_trees(result, grey_minimap):
             for i in range(loc[0].size):
                 x = loc[1][i]
                 y = loc[0][i]
-                distance = ((x - WIDTH/2) ** 2 + (y - HEIGHT/2) ** 2) ** 0.5
+                distance = ((x - MINIMAP_WIDTH/2) ** 2 + (y - MINIMAP_HEIGHT/2) ** 2) ** 0.5
                 distances.append(distance)
                 cv2.putText(grey_minimap, ".", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
                 cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
@@ -60,18 +61,23 @@ def find_trees(result, grey_minimap):
         print("No trees found.")
 
 def find_nearest_tree(distance_list, loc, grey_minimap):
+    roll = r(1,4)
     distance = [int(x) for x in distance_list]
     sorted_distance = sorted(distance)
-    nearest_tree = sorted_distance[1]
+    nearest_tree = sorted_distance[roll]
     tree_index = distance.index(nearest_tree)
     x_nearest = loc[1][tree_index]
     y_nearest = loc[0][tree_index]
     print(f'Pathing to nearest tree:\n({x_nearest}, {y_nearest}) - Distance: {nearest_tree}')
     cv2.putText(grey_minimap, ".", (x_nearest, y_nearest), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 2)
     cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
-    pyautogui.click(x_nearest + LEFT, y_nearest + RIGHT)
+    # MOVING TO NEAREST TREE
+    pyautogui.click(x_nearest + MINIMAP_LEFT, y_nearest + MINIMAP_RIGHT)
     time.sleep(5)
-    start_bot(app)
+    chop_tree()
+
+def chop_tree():
+    print("Chopping tree")
 
 
 start_bot(app)
