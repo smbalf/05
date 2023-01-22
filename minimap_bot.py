@@ -4,6 +4,7 @@ import pyautogui
 from pywinauto import Application
 import cv2
 import numpy as np
+import time
 
 
 load_dotenv()
@@ -15,11 +16,13 @@ HEIGHT=150
 REGION=(LEFT,RIGHT,WIDTH,HEIGHT)
 
 app = Application().connect(title=TITLE)
-app.top_window().set_focus()
-
-minimap_tree_png = "images/minimap_tree.png"
 THRESHOLD = 0.6
 
+def start_bot(app):
+    app.top_window().set_focus()
+    minimap_tree_png = "images/minimap_tree.png"
+    get_images(minimap_tree_png)
+    
 def get_images(minimap_tree_png):
     minimap = pyautogui.screenshot(region=REGION)
     minimap.save("output_images/current_minimap.png")
@@ -49,8 +52,8 @@ def find_trees(result, grey_minimap):
                 y = loc[0][i]
                 distance = ((x - WIDTH/2) ** 2 + (y - HEIGHT/2) ** 2) ** 0.5
                 distances.append(distance)
-                #cv2.putText(grey_minimap, ".", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
-                #cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
+                cv2.putText(grey_minimap, ".", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+                cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
         find_nearest_tree(distances, loc, grey_minimap)
 
     else:
@@ -58,13 +61,17 @@ def find_trees(result, grey_minimap):
 
 def find_nearest_tree(distance_list, loc, grey_minimap):
     distance = [int(x) for x in distance_list]
-    nearest_tree = min(distance)
+    sorted_distance = sorted(distance)
+    nearest_tree = sorted_distance[1]
     tree_index = distance.index(nearest_tree)
     x_nearest = loc[1][tree_index]
     y_nearest = loc[0][tree_index]
-    print(f'Nearest tree: ({x_nearest}, {y_nearest}) - Dist: {nearest_tree}')
-    #cv2.putText(grey_minimap, ".", (x_nearest, y_nearest), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 2)
-    #cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
+    print(f'Pathing to nearest tree:\n({x_nearest}, {y_nearest}) - Distance: {nearest_tree}')
+    cv2.putText(grey_minimap, ".", (x_nearest, y_nearest), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (200, 200, 200), 2)
+    cv2.imwrite(f'output_images/trees_found.png', grey_minimap)
+    pyautogui.click(x_nearest + LEFT, y_nearest + RIGHT)
+    time.sleep(5)
+    start_bot(app)
 
 
-get_images(minimap_tree_png)
+start_bot(app)
